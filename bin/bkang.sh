@@ -3,18 +3,19 @@
 DRY_RUN=0 # 0 for real run, 1 for dry run
 
 # Config variables start here
-EXCLUDE=" --exclude .cache --exclude --exclude tmp --exclude .local --exclude anaconda3 --exclude .conda --exclude .config --exclude .mozilla --exclude .thunderbird --exclude .ssh "
+EXCLUDE=" --exclude environments --exclude .cache --exclude tmp --exclude .local --exclude anaconda3 --exclude .conda --exclude .config --exclude .mozilla --exclude .thunderbird  --filter='- .ssh/id_*' "
+EXCLUDE=" --exclude=.cache --exclude=tmp --exclude=.local --exclude=anaconda3 --exclude=.conda --exclude=.config --exclude=.mozilla --exclude=.thunderbird  --filter='- .ssh/id_*' "
 SRV=127.0.0.1
 
 SRCDIR=/home  # The absolute path to the directory to back-up
-SRCDIR=/home/anguelos/work/src/ptlbp/
+#SRCDIR=/home/anguelos/work/src/ptlbp/
 
 SRVDIR=/mnt/backup # The directory on the server to store the back-ups
-SRVDIR=/tmp/bkup
+#SRVDIR=/tmp/bkup
 
-CURRENTDIR="${SRVDIR}/current/${SRCDIR}/"
+CURRENTDIR="${SRVDIR}/current/${SRCDIR}"
 ARCHIVEDIR="${SRVDIR}/archive"
-DATEDIRCMD="${ARCHIVEDIR}/$(date -I)/${SRCDIR}/"
+DATEDIRCMD="${ARCHIVEDIR}/$(date -I)"
 # Config variables end here
 
 
@@ -41,7 +42,7 @@ case $MODE in
         echo "Archive not found, continuing with back-up"
 
         # Rsync to server
-        CMD="rsync -avh ${EXCLUDE} --progress --delete ${SRCDIR} ${SRV}:${CURRENTDIR} && echo 'rsync done' || echo 'rsync failed'"
+        CMD="rsync -avh ${EXCLUDE} --progress --delete ${SRCDIR}/ ${SRV}:${CURRENTDIR}/ && echo 'rsync done' || echo 'rsync failed'"
         echo $CMD
         if [ $DRY_RUN -eq 0 ]; then
             eval $CMD
