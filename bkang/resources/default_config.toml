@@ -1,0 +1,25 @@
+# Archive location
+
+backup_src = "/home"
+archive_root = "/mnt/btrfs/backup"
+current_name = "current"
+snapshots_name = "snapshots"
+
+# Prunning parameters
+yearly_count = -1 # -1 means no limit
+monthly_count = 12
+weekly_count = 5
+daily_count = 7
+hourly_count = 24
+
+# filocks_dir
+filocks_dir = "/tmp/backang"
+
+mode = "btrfs" # btrfs or rsync
+
+crontab_identifier = "bkang"
+
+# Crontab frequencies
+sync_crontab_freq = "@hourly"
+snapshot_crontab_freq = "@hourly"
+prune_crontab_freq = "@daily"
