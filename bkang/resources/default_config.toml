@@ -1,7 +1,15 @@
-# Archive location
+# Setup mode One of three options:
 
+# mode = "client"
+
+# mode = "server"
+
+mode = "local"
+
+# Archive location
+archive_address = "127.0.0.1"  #  any ssh credentials with public key authentication will do
 backup_src = "/home"
-archive_root = "/mnt/btrfs/backup"
+archive_root = "/mnt/btrfs/backup"  #  "/mnt/btrfs/backup"
 current_name = "current"
 snapshots_name = "snapshots"
 
@@ -12,14 +20,11 @@ weekly_count = 5
 daily_count = 7
 hourly_count = 24
 
-# filocks_dir
-filocks_dir = "/tmp/backang"
-
-mode = "btrfs" # btrfs or rsync
+fstype = "btrfs" # btrfs, hardlinks, remote
 
 crontab_identifier = "bkang"
 
 # Crontab frequencies
-sync_crontab_freq = "@hourly"
-snapshot_crontab_freq = "@hourly"
-prune_crontab_freq = "@daily"
+sync_crontab_freq = "0 * * * *"
+snapshot_crontab_freq = "30 * * * *"
+prune_crontab_freq = ""

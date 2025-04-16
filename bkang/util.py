@@ -41,12 +41,3 @@ def get_cmd_output(cmd: str, show_cmd: bool = True, show_output: bool = True, ou
     if show_output:
         print(result.stdout, file=output_file)
     return result.stdout.strip()
-
-
-def mkdir_p(path: Union[str, Path]) -> None:
-    """
-    Create a directory if it does not exist.
-    """
-    if isinstance(path, str):
-        path = Path(path)
-    path.mkdir(parents=True, exist_ok=True)

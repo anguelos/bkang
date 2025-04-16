@@ -1,0 +1,11 @@
+# debian/bkang.install
+bkang/resources/bkang-browse.desktop usr/share/applications/
+bkang/resources/icons/16x16/bkang-browse.png usr/share/icons/hicolor/16x16/apps/
+bkang/resources/icons/24x24/bkang-browse.png usr/share/icons/hicolor/24x24/apps/
+bkang/resources/icons/32x32/bkang-browse.png usr/share/icons/hicolor/32x32/apps/
+bkang/resources/icons/48x48/bkang-browse.png usr/share/icons/hicolor/48x48/apps/
+bkang/resources/icons/64x64/bkang-browse.png usr/share/icons/hicolor/64x64/apps/
+bkang/resources/icons/128x128/bkang-browse.png usr/share/icons/hicolor/128x128/apps/
+bkang/resources/icons/256x256/bkang-browse.png usr/share/icons/hicolor/256x256/apps/
+bkang/resources/icons/512x512/bkang-browse.png usr/share/icons/hicolor/512x512/apps/
+

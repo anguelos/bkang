@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=bkang-browse
+Comment=A Browser For Bkang Backup Archives
+Exec=bkang-browse
+Icon=bkang-browse
+Terminal=false
+Type=Application
+Categories=Utility;Application;

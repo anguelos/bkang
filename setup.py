@@ -1,6 +1,18 @@
 from setuptools import setup, find_packages
 import shutil
+import sys
 
+
+
+data_files = [
+    ("share/applications", ["bkang/resources/bkang-browse.desktop"]),
+]
+
+# Add each icon size to the correct hicolor path
+for size in [16, 24, 32, 48, 64, 128, 256, 512]:
+    icon_path = f"bkang/resources/icons/{size}x{size}/bkang-browse.png"
+    install_path = f"share/icons/hicolor/{size}x{size}/apps"
+    data_files.append((install_path, [icon_path]))
 
 setup(
     name="bkang",
@@ -18,7 +30,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.9",
-    install_requires=["fargv>=0.1.0", "toml"],
+    install_requires=["fargv", "toml", "PySide6", "python-crontab"],
     entry_points={
         "console_scripts": [
             "bkang-prune=bkang.datename:list_prune_main",
@@ -27,5 +39,17 @@ setup(
             "bkang-config=bkang.config:config_main",
             "bkang-setup=bkang.config:setup_main",
         ],
+        "gui_scripts": [
+            "bkang-browse=bkang.gui_browser:main_browse_gui",
+        ],
+    },
+    data_files=data_files,
+    include_package_data=True,
+    package_data={
+        "bkang": [
+            "resources/icons/*.png",
+            "resources/bkang-browse.desktop",
+            "resources/default_config.toml",
+        ]
     },
 )

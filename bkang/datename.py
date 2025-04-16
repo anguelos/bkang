@@ -179,6 +179,7 @@ def get_prune_list(snapshots: List[Path], yearly_count: int = -1, monthly_count:
 
 def list_prune_main():
     from .config import update_fargv_dict
+    from .util import get_cmd_output, single_instance_aborting
     import fargv
     import glob
     import sys
@@ -192,7 +193,7 @@ def list_prune_main():
         "hourly_count": 24,
         "verbose": 1,
         "no_dry_run": False,
-        "mode": ("list", "btrfs", "hardlinks")
+        "fstype": ("btrfs", "hardlinks")
     }
     update_fargv_dict(p)
     args, _ = fargv.fargv(p)
@@ -209,19 +210,23 @@ def list_prune_main():
         if args.mode == "list":
             res_str = f"{snapshot}"
         elif args.mode == "btrfs":
-            res_str = f"sudo btrfs subvolume delete {snapshot}"
+            res_str = f"btrfs subvolume delete {snapshot}"
         elif args.mode == "hardlinks":
-            res_str = f"sudo rm -Rf {snapshot}"
+            res_str = f"rm -Rf {snapshot}"
         else:
             raise ValueError(f"Invalid mode: {args.mode}")
         if args.no_dry_run:
-            raise NotImplementedError("Not implemented yet")
+            @single_instance_aborting("prune_snapshot")
+            def prune_snapshot():
+                get_cmd_output(res_str, show_cmd=False, show_output=True)
+            prune_snapshot()
         else:
             print(res_str, file=sys.stdout)
 
 
 def sync_current_main():
     from .config import update_fargv_dict
+    from .util import get_cmd_output, single_instance_aborting
     import fargv
     import glob
     import sys
@@ -246,14 +251,17 @@ def sync_current_main():
     cmd = f"rsync rsync -aAXH --delete {args.input}/ {args.archive_root}/{args.current_name}/"
     if args.no_dry_run:
         assert args.archive_root.startswith("/"), "Only absolute paths are allowed when not dry running."
-        get_cmd_output(cmd, show_cmd=False, show_output=True)
+        @single_instance_aborting("sync_current")
+        def sync_current():
+            get_cmd_output(cmd, show_cmd=False, show_output=True)
+        sync_current()
     else:
         print(cmd, file=sys.stdout)
 
 
 def take_snapshot_main():
     from .config import update_fargv_dict
-    from .util import get_cmd_output
+    from .util import get_cmd_output, single_instance_aborting
     import fargv
     import glob
     import sys
@@ -262,7 +270,7 @@ def take_snapshot_main():
         "current_name": "current",
         "snapshots_name": "snapshots",
         "no_dry_run": False,
-        "mode": ("btrfs", "hardlinks")
+        "fstype": ("btrfs", "hardlinks")
     }
     update_fargv_dict(p)
     args, _ = fargv.fargv(p)
@@ -274,17 +282,22 @@ def take_snapshot_main():
         args.current_name = args.current_name[:-1]
     if args.snapshots_name.endswith("/"):
         args.snapshots_name = args.snapshots_name[:-1]
-    if args.mode == "btrfs":
+    if args.fstype == "btrfs":
         cmd = f"btrfs subvolume snapshot {args.archive_root}/{args.current_name} {args.archive_root}/{args.snapshots_name}/{str(Datename())}"
         if args.no_dry_run:
             assert args.archive_root.startswith("/"), "Only absolute paths are allowed when not dry running."
             get_cmd_output(cmd, show_cmd=False, show_output=True)
         else:
             print(cmd, file=sys.stdout)
-    elif args.mode == "hardlinks":
+    elif args.fstype == "hardlinks":
         cmd = f"cp --link -a {args.archive_root}/{args.current_name} {args.archive_root}/{args.snapshots_name}/{str(Datename())}"
         if args.no_dry_run:
             assert args.archive_root.startswith("/"), "Only absolute paths are allowed when not dry running."
-            get_cmd_output(cmd, show_cmd=False, show_output=True)
+            @single_instance_aborting("take_snapshot_main")
+            def take_snapshot_main():
+                get_cmd_output(cmd, show_cmd=False, show_output=True)
+            take_snapshot_main()
         else:
             print(cmd, file=sys.stdout)
+    else:
+        raise ValueError(f"Invalid fstype: {args.fstype}")

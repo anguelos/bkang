@@ -1,0 +1,7 @@
+# debian/bkang.links
+/opt/venvs/bkang/bin/bkang-prune usr/bin/bkang-prune
+/opt/venvs/bkang/bin/bkang-sync usr/bin/bkang-sync
+/opt/venvs/bkang/bin/bkang-snapshot usr/bin/bkang-snapshot
+/opt/venvs/bkang/bin/bkang-config usr/bin/bkang-config
+/opt/venvs/bkang/bin/bkang-setup usr/bin/bkang-setup
+/opt/venvs/bkang/bin/bkang-browse usr/bin/bkang-browse
