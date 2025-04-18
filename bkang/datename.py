@@ -31,6 +31,16 @@ class Datename:
             }
         except ValueError:
             raise ValueError(f"Invalid date string: {date_str}")
+
+    @staticmethod
+    def path_to_datename(s: Union[Path, str]) -> Self:
+        """
+        Convert a string to a Datename object.
+        """
+        if isinstance(s, str):
+            s = Path(s)
+        date_str = s.stem
+        return Datename(date_str)
     
     @staticmethod
     def is_valid_date_str(date_str: str) -> bool:
@@ -112,6 +122,13 @@ class Datename:
     
     def __int__(self) -> int:
         return self.unix_time
+    
+    def pretty(self) -> str:
+        """
+        Pretty print the date.
+        """
+        date = datetime.datetime.strptime(self.date_str, self.__date_str_format)
+        return date.strftime("%a %d %b %Y %H:%M")
     
     @classmethod
     def one_year(cls) -> str:
@@ -231,7 +248,8 @@ def sync_current_main():
     import glob
     import sys
     p = {
-        "input": "/home/",
+        "archive_address": "127.0.0.1",
+        "backup_src": "/home/",
         "archive_root": "./",
         "current_name": "current",
         "verbose": 1,
@@ -242,18 +260,18 @@ def sync_current_main():
     args, _ = fargv.fargv(p)
     if args.no_dry_run:
         assert args.archive_root.startswith("/"), "Only absolute paths are allowed when not dry running."
-    if args.input.endswith("/"):
-        args.input = args.input[:-1]
+    if args.backup_src.endswith("/"):
+        args.backup_src = args.input[:-1]
     if args.archive_root.endswith("/"):
         args.archive_root = args.archive_root[:-1]
     if args.current_name.endswith("/"):
         args.current_name = args.current_name[:-1]
-    cmd = f"rsync rsync -aAXH --delete {args.input}/ {args.archive_root}/{args.current_name}/"
+    cmd = f"rsync -aAXH --delete {args.backup_src}/ {args.archive_address}:{args.archive_root}/{args.current_name}{args.backup_src}/"
     if args.no_dry_run:
         assert args.archive_root.startswith("/"), "Only absolute paths are allowed when not dry running."
         @single_instance_aborting("sync_current")
         def sync_current():
-            get_cmd_output(cmd, show_cmd=False, show_output=True)
+            get_cmd_output(cmd, show_cmd=True, show_output=True)
         sync_current()
     else:
         print(cmd, file=sys.stdout)
@@ -295,7 +313,7 @@ def take_snapshot_main():
             assert args.archive_root.startswith("/"), "Only absolute paths are allowed when not dry running."
             @single_instance_aborting("take_snapshot_main")
             def take_snapshot_main():
-                get_cmd_output(cmd, show_cmd=False, show_output=True)
+                get_cmd_output(cmd, show_cmd=True, show_output=True)
             take_snapshot_main()
         else:
             print(cmd, file=sys.stdout)

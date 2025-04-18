@@ -13,6 +13,7 @@ from PySide6.QtGui import QIcon, QKeySequence, QClipboard, QAction, QPixmap, QPa
 from PySide6.QtCore import Qt, QSize, QEvent
 
 import glob
+from .datename import Datename
 #from PySide6.QtWidgets import QListWidgetItem, QListWidget
 
 
@@ -198,17 +199,22 @@ class PathSlider(QListWidget):
         self.setStyleSheet("background-color: rgba(0, 0, 0, 250); color: white;")
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.itemClicked.connect(self.on_slider_item_selected)
+        self.captions_to_paths = {}
 
     def populate(self, glob_pattern):
         self.clear()
         matches = sorted(glob.glob(glob_pattern))
         for path in matches:
             if os.path.isdir(path):
-                self.addItem(QListWidgetItem(path))
+                caption = Datename.path_to_datename(path).pretty()
+                self.captions_to_paths[caption] = path
+                self.addItem(QListWidgetItem(caption))
 
     def on_slider_item_selected(self, item):
         if self.backdrop.file_manager:
-            self.backdrop.file_manager.set_fake_root(item.text())
+            caption = item.text()
+            path = self.captions_to_paths.get(caption)
+            self.backdrop.file_manager.set_fake_root(path)
             self.backdrop.file_manager.raise_()
             self.backdrop.file_manager.activateWindow()
 
@@ -227,7 +233,7 @@ class FullscreenBackdrop(QWidget):
         self.glob_pattern = glob_pattern or "*"
 
         self.slider = PathSlider(self, self)
-        self.slider.setFixedWidth(int(self.width() * 0.1))
+        self.slider.setFixedWidth(int(self.width() * 0.31))
         self.slider.move(0, 0)
         self.slider.populate(self.glob_pattern)
         self.setWindowFlags(Qt.Window | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
@@ -260,14 +266,25 @@ class FullscreenBackdrop(QWidget):
 
 
 def main_browse_gui():
+    from .config import update_fargv_dict
+    import fargv
+    import glob
+    p = {
+        "archive_root": "./",
+        "current_name": "current",
+        "snapshots_name": "snapshots",
+        "date_glob": "*-*-*-*-*-*",
+    }
+    update_fargv_dict(p)
+    args, _ = fargv.fargv(p)
+    snapshot_glob = f"{args.archive_root}/{args.snapshots_name}/{args.date_glob}"
     app = QApplication(sys.argv)
     #fake_root = QFileDialog.getExistingDirectory(None, "Select Fake Root")
-    fake_root = "/mnt/btrfs/tmp/snapshots"
+    fake_root = list(glob.glob(snapshot_glob))[-1]
     #wallpaper = QFileDialog.getOpenFileName(None, "Select Background Wallpaper", "", "Images (*.png *.jpg *.jpeg *.bmp)")[0]
     wallpaper = "/usr/share/backgrounds/Milkyway_by_mizuno_as.png"
   
     if fake_root:
-        glob_expr = "/mnt/btrfs/tmp/snapshots/*"  # Example glob expression
         manager = FileManager(fake_root)
         manager.installEventFilter(manager)
         screen = app.primaryScreen().geometry()
@@ -276,7 +293,7 @@ def main_browse_gui():
             screen.center().x() - manager.width() // 2,
             screen.center().y() - manager.height() // 2
         )
-        backdrop = FullscreenBackdrop(wallpaper_path=wallpaper, file_manager=manager, glob_pattern=glob_expr)
+        backdrop = FullscreenBackdrop(wallpaper_path=wallpaper, file_manager=manager, glob_pattern=snapshot_glob)
         # Show backdrop fullscreen
         backdrop.showFullScreen()
 
